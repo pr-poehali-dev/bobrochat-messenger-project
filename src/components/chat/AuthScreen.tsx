@@ -55,7 +55,7 @@ export default function AuthScreen({ onAuth }: Props) {
             <span className="">🦫</span>
           </div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">BobroChat</h1>
-          <p className="text-gray-500 mt-1 text-sm">Мессенджер нового поколения</p>
+          <p className="mt-1 text-sm text-center text-slate-900">Мессенджер нового поколения</p>
         </div>
 
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-orange-100/50 p-8 border border-white/60">
