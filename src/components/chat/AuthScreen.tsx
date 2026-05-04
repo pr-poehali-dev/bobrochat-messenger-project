@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { User } from "@/pages/Index";
 import Icon from "@/components/ui/icon";
+import { api } from "@/lib/api";
 
 interface Props {
   onAuth: (user: User) => void;
 }
 
 type Mode = "login" | "register";
-
-const MOCK_USERS: User[] = [];
 
 export default function AuthScreen({ onAuth }: Props) {
   const [mode, setMode] = useState<Mode>("login");
@@ -19,48 +18,27 @@ export default function AuthScreen({ onAuth }: Props) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const getInitials = (name: string) =>
-    name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "?";
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
-    if (mode === "login") {
-      setLoading(true);
-      await new Promise((r) => setTimeout(r, 500));
-      const found = MOCK_USERS.find((u) => u.email === email && u.bio === password);
-      if (found) {
-        onAuth(found);
-        return;
+    setLoading(true);
+    try {
+      let data;
+      if (mode === "login") {
+        data = await api.auth.login(email, password);
+      } else {
+        if (!username.match(/^[a-zA-Z0-9_]{3,20}$/)) {
+          setError("Username: 3–20 символов, только латиница, цифры и _");
+          setLoading(false);
+          return;
+        }
+        data = await api.auth.register(email, username, displayName, password);
       }
-      setError("Неверный email или пароль");
+      onAuth(data as User);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Ошибка. Попробуй ещё раз");
+    } finally {
       setLoading(false);
-    } else {
-      if (!username.match(/^[a-zA-Z0-9_]{3,20}$/)) {
-        setError("Username: 3–20 символов, только латиница, цифры и _");
-        return;
-      }
-      if (MOCK_USERS.some((u) => u.username === username)) {
-        setError("Этот username уже занят");
-        return;
-      }
-      if (MOCK_USERS.some((u) => u.email === email)) {
-        setError("Этот email уже зарегистрирован");
-        return;
-      }
-      setLoading(true);
-      await new Promise((r) => setTimeout(r, 500));
-      const newUser: User = {
-        id: Date.now().toString(),
-        email,
-        username,
-        displayName: displayName || username,
-        avatar: getInitials(displayName || username),
-        bio: password,
-      };
-      MOCK_USERS.push(newUser);
-      onAuth(newUser);
     }
   };
 

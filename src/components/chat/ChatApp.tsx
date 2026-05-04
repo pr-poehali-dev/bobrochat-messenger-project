@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { User } from "@/pages/Index";
 import Sidebar from "./Sidebar";
 import ChatWindow from "./ChatWindow";
@@ -6,9 +6,31 @@ import ContactsPanel from "./ContactsPanel";
 import SearchPanel from "./SearchPanel";
 import ProfilePanel from "./ProfilePanel";
 import SettingsPanel from "./SettingsPanel";
-import { Chat, MOCK_CHATS } from "./data";
+import { api } from "@/lib/api";
 
 export type Tab = "chats" | "contacts" | "search" | "profile" | "settings";
+
+export interface ApiChat {
+  id: string;
+  partnerId: string;
+  name: string;
+  avatar: string;
+  username: string;
+  lastMessage: string;
+  lastTime: string;
+  unread: number;
+  online: boolean;
+}
+
+export interface ApiMessage {
+  id: string;
+  senderId: string;
+  text: string;
+  imageUrl: string | null;
+  type: "text" | "image";
+  read: boolean;
+  timestamp: string;
+}
 
 interface Props {
   user: User;
@@ -17,48 +39,60 @@ interface Props {
 
 export default function ChatApp({ user, onLogout }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("chats");
-  const [chats, setChats] = useState<Chat[]>(MOCK_CHATS);
-  const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const [chats, setChats] = useState<ApiChat[]>([]);
+  const [activeChat, setActiveChat] = useState<ApiChat | null>(null);
   const [mobileShowChat, setMobileShowChat] = useState(false);
+  const [loadingChats, setLoadingChats] = useState(true);
 
-  const handleSelectChat = (chat: Chat) => {
-    const updated = chats.map((c) =>
-      c.id === chat.id ? { ...c, unread: 0 } : c
-    );
-    setChats(updated);
-    setActiveChat(updated.find((c) => c.id === chat.id) || chat);
+  const loadChats = useCallback(async () => {
+    try {
+      const data = await api.chats.list(user.id);
+      setChats(data.chats || []);
+    } catch {
+      // silent
+    } finally {
+      setLoadingChats(false);
+    }
+  }, [user.id]);
+
+  useEffect(() => {
+    loadChats();
+    const interval = setInterval(loadChats, 5000);
+    return () => clearInterval(interval);
+  }, [loadChats]);
+
+  const handleSelectChat = async (chat: ApiChat) => {
+    setActiveChat({ ...chat, unread: 0 });
+    setChats((prev) => prev.map((c) => c.id === chat.id ? { ...c, unread: 0 } : c));
     setMobileShowChat(true);
   };
 
-  const handleSendMessage = (chatId: string, text: string, imageUrl?: string) => {
-    setChats((prev) =>
-      prev.map((c) => {
-        if (c.id !== chatId) return c;
-        const newMsg = {
-          id: `m${Date.now()}`,
-          senderId: user.id,
-          text,
-          timestamp: new Date(),
-          type: (imageUrl ? "image" : "text") as "text" | "image",
-          imageUrl,
-          read: true,
-        };
-        const updated = { ...c, messages: [...c.messages, newMsg], lastMessage: text, lastTime: "Сейчас" };
-        if (activeChat?.id === chatId) setActiveChat(updated);
-        return updated;
-      })
-    );
+  const handleStartChatWithUser = async (userId: string, name: string, avatar: string, username: string) => {
+    try {
+      const data = await api.chats.create(user.id, userId);
+      const chatId = data.chatId;
+      const newChat: ApiChat = {
+        id: chatId, partnerId: userId, name, avatar, username,
+        lastMessage: "", lastTime: "", unread: 0, online: false
+      };
+      await loadChats();
+      setActiveChat(newChat);
+      setActiveTab("chats");
+      setMobileShowChat(true);
+    } catch {
+      // silent
+    }
   };
 
   const renderRight = () => {
     if (activeTab === "chats") {
       if (!activeChat) {
         return (
-          <div className="flex-1 hidden md:flex flex-col items-center justify-center bg-orange-50/50">
+          <div className="flex-1 hidden md:flex flex-col items-center justify-center bg-gray-50">
             <div className="text-center animate-fade-in">
               <div className="text-6xl mb-4">🦫</div>
               <p className="text-xl font-bold text-gray-700">Выбери чат</p>
-              <p className="text-gray-400 text-sm mt-1">и начни общаться как настоящий бобёр</p>
+              <p className="text-gray-400 text-sm mt-1">и начни общаться</p>
             </div>
           </div>
         );
@@ -67,32 +101,35 @@ export default function ChatApp({ user, onLogout }: Props) {
         <ChatWindow
           chat={activeChat}
           userId={user.id}
-          onSend={handleSendMessage}
           onBack={() => { setActiveChat(null); setMobileShowChat(false); }}
+          onChatUpdated={loadChats}
         />
       );
     }
-    if (activeTab === "contacts") return <ContactsPanel contacts={[]} onStartChat={handleSelectChat} chats={chats} setActiveTab={setActiveTab} />;
-    if (activeTab === "search") return <SearchPanel chats={chats} onSelectChat={(c) => { setActiveTab("chats"); handleSelectChat(c); }} />;
+    if (activeTab === "contacts") return (
+      <ContactsPanel userId={user.id} onStartChat={handleStartChatWithUser} />
+    );
+    if (activeTab === "search") return (
+      <SearchPanel userId={user.id} chats={chats} onSelectChat={(c) => { setActiveTab("chats"); handleSelectChat(c); }} onStartChat={handleStartChatWithUser} />
+    );
     if (activeTab === "profile") return <ProfilePanel user={user} />;
     if (activeTab === "settings") return <SettingsPanel onLogout={onLogout} />;
   };
 
   return (
-    <div className="h-screen flex bg-orange-50/30 overflow-hidden">
-      {/* Sidebar — always visible on desktop */}
-      <div className={`${mobileShowChat && activeTab === "chats" ? "hidden" : "flex"} md:flex flex-col`}>
+    <div className="h-screen flex bg-gray-50 overflow-hidden">
+      <div className={`${mobileShowChat && activeTab === "chats" ? "hidden" : "flex"} md:flex flex-col border-r border-gray-100 bg-white shadow-sm`}>
         <Sidebar
           activeTab={activeTab}
-          onTabChange={(t) => { setActiveTab(t); setMobileShowChat(false); setActiveChat(null); }}
+          onTabChange={(t) => { setActiveTab(t); setMobileShowChat(false); if (t !== "chats") setActiveChat(null); }}
           user={user}
           chats={chats}
+          loadingChats={loadingChats}
           activeChat={activeChat}
           onSelectChat={handleSelectChat}
         />
       </div>
 
-      {/* Main content */}
       <div className={`flex-1 flex flex-col min-w-0 ${!mobileShowChat && activeTab === "chats" ? "hidden md:flex" : "flex"}`}>
         {renderRight()}
       </div>

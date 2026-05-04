@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Register new user",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "login", "email": "nonexistent@bobro.chat", "password": "wrong"},
+      "expectedStatus": 401,
+      "bodyMatcher": "none"
+    }
+  ]
+}
