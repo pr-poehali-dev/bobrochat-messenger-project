@@ -1,14 +1,22 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import AuthScreen from "@/components/chat/AuthScreen";
+import ChatApp from "@/components/chat/ChatApp";
 
-const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 color-black text-black">Добро пожаловать!</h1>
-        <p className="text-xl text-gray-600">тут будет отображаться ваш проект</p>
-      </div>
-    </div>
-  );
-};
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  displayName: string;
+  avatar: string;
+  bio: string;
+}
 
-export default Index;
+export default function Index() {
+  const [user, setUser] = useState<User | null>(null);
+
+  if (!user) {
+    return <AuthScreen onAuth={setUser} />;
+  }
+
+  return <ChatApp user={user} onLogout={() => setUser(null)} />;
+}
