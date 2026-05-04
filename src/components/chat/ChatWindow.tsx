@@ -78,17 +78,9 @@ export default function ChatWindow({ chat, userId, onSend, onBack }: Props) {
           </p>
         </div>
 
-        <div className="flex items-center gap-1">
-          <button className="p-2 rounded-xl hover:bg-orange-50 text-gray-500 hover:text-orange-500 transition-colors">
-            <Icon name="Phone" size={18} />
-          </button>
-          <button className="p-2 rounded-xl hover:bg-orange-50 text-gray-500 hover:text-orange-500 transition-colors">
-            <Icon name="Video" size={18} />
-          </button>
-          <button className="p-2 rounded-xl hover:bg-orange-50 text-gray-500 hover:text-orange-500 transition-colors">
-            <Icon name="MoreVertical" size={18} />
-          </button>
-        </div>
+        <button className="p-2 rounded-xl hover:bg-orange-50 text-gray-500 hover:text-orange-500 transition-colors">
+          <Icon name="MoreVertical" size={18} />
+        </button>
       </div>
 
       {/* Messages */}

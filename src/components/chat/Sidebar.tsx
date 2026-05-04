@@ -12,9 +12,12 @@ interface Props {
   onSelectChat: (chat: Chat) => void;
 }
 
-const tabs = [
+const topTabs = [
   { id: "chats" as Tab, icon: "MessageCircle", label: "Чаты" },
   { id: "contacts" as Tab, icon: "Users", label: "Контакты" },
+];
+
+const bottomTabs = [
   { id: "search" as Tab, icon: "Search", label: "Поиск" },
   { id: "profile" as Tab, icon: "User", label: "Профиль" },
   { id: "settings" as Tab, icon: "Settings", label: "Настройки" },
@@ -23,42 +26,52 @@ const tabs = [
 export default function Sidebar({ activeTab, onTabChange, user, chats, activeChat, onSelectChat }: Props) {
   const totalUnread = chats.reduce((s, c) => s + c.unread, 0);
 
+  const renderTab = (tab: { id: Tab; icon: string; label: string }) => {
+    const isActive = activeTab === tab.id;
+    const isChatTab = tab.id === "chats";
+    return (
+      <button
+        key={tab.id}
+        onClick={() => onTabChange(tab.id)}
+        className={`relative w-full flex flex-col items-center py-2.5 px-1 rounded-xl transition-all duration-200 ${
+          isActive
+            ? "bg-white/25 text-white"
+            : "text-white/60 hover:text-white hover:bg-white/15"
+        }`}
+      >
+        <Icon name={tab.icon} size={20} />
+        <span className="text-[9px] mt-0.5 font-medium">{tab.label}</span>
+        {isChatTab && totalUnread > 0 && (
+          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-white text-orange-600 text-[9px] font-bold rounded-full flex items-center justify-center">
+            {totalUnread > 9 ? "9+" : totalUnread}
+          </span>
+        )}
+      </button>
+    );
+  };
+
   return (
     <div className="flex h-full">
       {/* Nav rail */}
-      <div className="w-16 md:w-16 h-full bg-gradient-to-b from-orange-500 to-orange-600 flex flex-col items-center py-4 gap-1 shadow-lg">
+      <div className="w-16 h-full bg-gradient-to-b from-orange-500 to-orange-600 flex flex-col items-center py-4 gap-1 shadow-lg">
+        {/* Logo */}
         <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
           <span className="text-xl">🦫</span>
         </div>
 
-        <div className="flex-1 flex flex-col items-center gap-1 w-full px-2">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            const isChatTab = tab.id === "chats";
-            return (
-              <button
-                key={tab.id}
-                onClick={() => onTabChange(tab.id)}
-                className={`relative w-full flex flex-col items-center py-2.5 px-1 rounded-xl transition-all duration-200 group ${
-                  isActive
-                    ? "bg-white/25 text-white"
-                    : "text-white/60 hover:text-white hover:bg-white/15"
-                }`}
-              >
-                <Icon name={tab.icon} size={20} />
-                <span className="text-[9px] mt-0.5 font-medium">{tab.label}</span>
-                {isChatTab && totalUnread > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-white text-orange-600 text-[9px] font-bold rounded-full flex items-center justify-center">
-                    {totalUnread > 9 ? "9+" : totalUnread}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+        {/* Top tabs */}
+        <div className="flex flex-col items-center gap-1 w-full px-2">
+          {topTabs.map(renderTab)}
         </div>
 
-        <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center">
-          <span className="text-sm font-bold text-white">{user.avatar}</span>
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Bottom island */}
+        <div className="w-full px-2 mb-1">
+          <div className="bg-black/20 backdrop-blur rounded-2xl p-1 flex flex-col gap-0.5">
+            {bottomTabs.map(renderTab)}
+          </div>
         </div>
       </div>
 
