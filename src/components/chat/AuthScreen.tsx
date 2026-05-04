@@ -79,7 +79,7 @@ export default function AuthScreen({ onAuth }: Props) {
             {mode === "register" && (
               <>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-orange-600">
                     Имя
                   </label>
                   <input
@@ -92,7 +92,7 @@ export default function AuthScreen({ onAuth }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-orange-600">
                     Username
                   </label>
                   <div className="relative">
