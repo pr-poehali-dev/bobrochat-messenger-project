@@ -51,8 +51,8 @@ export default function AuthScreen({ onAuth }: Props) {
 
       <div className="relative w-full max-w-md animate-fade-in">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-3xl shadow-lg shadow-orange-300/50 mb-4">
-            <span className="text-4xl">🦫</span>
+          <div className="inline-flex items-center justify-center w-20 h-20 from-orange-400 to-orange-600 rounded-3xl shadow-lg shadow-orange-300/50 mb-4 bg-slate-500">
+            <span className="">🦫</span>
           </div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">BobroChat</h1>
           <p className="text-gray-500 mt-1 text-sm">Мессенджер нового поколения</p>
@@ -111,7 +111,7 @@ export default function AuthScreen({ onAuth }: Props) {
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-orange-600">
                 Email
               </label>
               <input
@@ -125,7 +125,7 @@ export default function AuthScreen({ onAuth }: Props) {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+              <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide text-orange-600">
                 Пароль
               </label>
               <input
