@@ -8,16 +8,7 @@ interface Props {
 
 type Mode = "login" | "register";
 
-const MOCK_USERS: User[] = [
-  {
-    id: "1",
-    email: "demo@bobro.chat",
-    username: "bobr_king",
-    displayName: "Бобёр Королевич",
-    avatar: "БК",
-    bio: "Строю плотины и пишу код 🦫",
-  },
-];
+const MOCK_USERS: User[] = [];
 
 export default function AuthScreen({ onAuth }: Props) {
   const [mode, setMode] = useState<Mode>("login");
@@ -29,51 +20,48 @@ export default function AuthScreen({ onAuth }: Props) {
   const [loading, setLoading] = useState(false);
 
   const getInitials = (name: string) =>
-    name
-      .split(" ")
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+    name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2) || "?";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
-
-    await new Promise((r) => setTimeout(r, 600));
 
     if (mode === "login") {
-      const found = MOCK_USERS.find((u) => u.email === email);
-      if (found && password === "demo123") {
+      setLoading(true);
+      await new Promise((r) => setTimeout(r, 500));
+      const found = MOCK_USERS.find((u) => u.email === email && u.bio === password);
+      if (found) {
         onAuth(found);
-      } else {
-        setError("Неверный email или пароль");
+        return;
       }
+      setError("Неверный email или пароль");
+      setLoading(false);
     } else {
       if (!username.match(/^[a-zA-Z0-9_]{3,20}$/)) {
         setError("Username: 3–20 символов, только латиница, цифры и _");
-        setLoading(false);
         return;
       }
       if (MOCK_USERS.some((u) => u.username === username)) {
         setError("Этот username уже занят");
-        setLoading(false);
         return;
       }
+      if (MOCK_USERS.some((u) => u.email === email)) {
+        setError("Этот email уже зарегистрирован");
+        return;
+      }
+      setLoading(true);
+      await new Promise((r) => setTimeout(r, 500));
       const newUser: User = {
         id: Date.now().toString(),
         email,
         username,
         displayName: displayName || username,
         avatar: getInitials(displayName || username),
-        bio: "",
+        bio: password,
       };
       MOCK_USERS.push(newUser);
       onAuth(newUser);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -81,16 +69,15 @@ export default function AuthScreen({ onAuth }: Props) {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-64 h-64 bg-orange-300/20 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 w-80 h-80 bg-amber-300/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-200/10 rounded-full blur-3xl" />
       </div>
 
       <div className="relative w-full max-w-md animate-fade-in">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-3xl shadow-lg shadow-orange-300/50 mb-4 animate-scale-in">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-3xl shadow-lg shadow-orange-300/50 mb-4">
             <span className="text-4xl">🦫</span>
           </div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tight">BobroChat</h1>
-          <p className="text-gray-500 mt-1 text-sm">Общайся как бобёр — строй связи!</p>
+          <p className="text-gray-500 mt-1 text-sm">Мессенджер нового поколения</p>
         </div>
 
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl shadow-orange-100/50 p-8 border border-white/60">
@@ -121,7 +108,7 @@ export default function AuthScreen({ onAuth }: Props) {
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Бобёр Иванович"
+                    placeholder="Иван Иванов"
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all placeholder:text-gray-400"
                     required
                   />
@@ -136,7 +123,7 @@ export default function AuthScreen({ onAuth }: Props) {
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                      placeholder="bobr_king"
+                      placeholder="username"
                       className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all placeholder:text-gray-400"
                       required
                     />
@@ -153,7 +140,7 @@ export default function AuthScreen({ onAuth }: Props) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="bobr@example.com"
+                placeholder="you@example.com"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all placeholder:text-gray-400"
                 required
               />
@@ -194,7 +181,7 @@ export default function AuthScreen({ onAuth }: Props) {
               ) : mode === "login" ? (
                 <>
                   <Icon name="LogIn" size={18} />
-                  Войти в BobroChat
+                  Войти
                 </>
               ) : (
                 <>
@@ -204,12 +191,6 @@ export default function AuthScreen({ onAuth }: Props) {
               )}
             </button>
           </form>
-
-          {mode === "login" && (
-            <p className="text-center text-xs text-gray-400 mt-4">
-              Демо: <span className="font-mono text-orange-500">demo@bobro.chat</span> / <span className="font-mono text-orange-500">demo123</span>
-            </p>
-          )}
         </div>
       </div>
     </div>
