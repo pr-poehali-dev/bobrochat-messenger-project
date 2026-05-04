@@ -51,10 +51,10 @@ export default function AuthScreen({ onAuth }: Props) {
 
       <div className="relative w-full max-w-md animate-fade-in">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 from-orange-400 to-orange-600 rounded-3xl shadow-lg shadow-orange-300/50 mb-4 bg-slate-500">
+          <div className="inline-flex items-center justify-center w-20 h-20 from-orange-400 to-orange-600 rounded-3xl shadow-lg shadow-orange-300/50 mb-4 bg-orange-600">
             <span className="">🦫</span>
           </div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">BobroChat</h1>
+          <h1 className="text-3xl font-black tracking-tight text-orange-600">BobroChat</h1>
           <p className="mt-1 text-sm text-center text-slate-900">Мессенджер нового поколения</p>
         </div>
 
